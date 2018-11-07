@@ -1,9 +1,9 @@
 // firstNprimes.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 bool isPrime(const unsigned int number, unsigned int *divisors)
 {
@@ -21,15 +21,29 @@ bool isPrime(const unsigned int number, unsigned int *divisors)
 	return true;
 }
 
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char* argv[])
 {
-	const unsigned int first_N_primes = 200000;
+	unsigned int first_N_primes = 10e6;
+
+	if (argc > 1)
+	{
+		first_N_primes = atoi(argv[1]);
+		printf("find %d primes\n", first_N_primes);
+		char* str_dec = argv[1];
+	}
+		
 	unsigned int numOfPrimesFound = 0;
-	unsigned int aPrimes[first_N_primes] = { 1 };
+	unsigned int* aPrimes = (unsigned int*)malloc(first_N_primes * sizeof(unsigned int));
+	if (aPrimes == NULL)
+	{
+		printf("Not enough memory for %d primes.\n", first_N_primes);
+		return -1;
+	}
+
 	unsigned int number;
 	unsigned int i;
 
-	printf("first %d primes:", first_N_primes);
+	printf("first %d primes:\n", first_N_primes);
 
 	// evaluate 2 as prime manually
 	number = 2;
@@ -54,4 +68,3 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	return 0;
 }
-
