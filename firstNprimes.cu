@@ -20,8 +20,8 @@ __global__
 void isPrime(const unsigned int number, const unsigned int *divisors, const unsigned int maxDivisor, unsigned long int *results)
 {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
-	int stride = blockDim.x * gridDim.x;
-	int i;
+	// int stride = blockDim.x * gridDim.x;
+	// int i;
 
 	__syncthreads();
 
@@ -55,7 +55,7 @@ void syncPrimes(const unsigned int *h_aPrimes, unsigned int *d_aPrimes,
 		(*h_pNumOfPrimesFound - *h_pNumOfPrimesFoundOnGPU)*sizeof(unsigned int), cudaMemcpyHostToDevice);
 	if (err != cudaSuccess)
 	{
-        fprintf(stderr, "Stync primes failed (error code %s)!\n", cudaGetErrorString(err));
+        fprintf(stderr, "Sync primes failed (error code %s)!\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
 	}
 	else
@@ -110,18 +110,21 @@ bool find_N_primes(const unsigned int N, unsigned int *h_aPrimes, unsigned long 
 
 	for (number = 3; *h_pNumOfPrimesFound < N; number++)
 	{
-		maxDivisor = (unsigned int)sqrt((double) number);
+		maxDivisor = (int)sqrt((double) number);
 		for(maxDivisorIndex = 0; h_aPrimes[maxDivisorIndex] < maxDivisor; maxDivisorIndex++);
 		// printf("h_pNumOfPrimesFound = %d\n", *h_pNumOfPrimesFound);
 		if(number == 121)
 		{
 			printf("maxDivisor %d\n", maxDivisor);
 			printf("maxDivisorIndex %d\n", maxDivisorIndex);
-			printf("h_aPrimes[maxDivisorIndex] %d\n", h_aPrimes[maxDivisorIndex]);
-			printf("[h_numOfPrimesFoundOnGPU] %d\n", h_numOfPrimesFoundOnGPU);
-			printf("h_aPrimes[h_numOfPrimesFoundOnGPU] %d\n", h_aPrimes[h_numOfPrimesFoundOnGPU]);
+			printf("h_aPrimes[maxDivisorIndex] %u\n", h_aPrimes[maxDivisorIndex]);
+			printf("h_numOfPrimesFoundOnGPU = %u\n", h_numOfPrimesFoundOnGPU);
+			printf("*h_pNumOfPrimesFound = %u\n", *h_pNumOfPrimesFound);
+			printf("h_aPrimes[h_numOfPrimesFoundOnGPU] %u\n", h_aPrimes[h_numOfPrimesFoundOnGPU]);
 			cudaDeviceSynchronize();
 			err = cudaMemcpy((void *)h_aPrimesTempHelp, (void *)d_aPrimes, 5*sizeof(unsigned int), cudaMemcpyDeviceToHost);
+			for (i = 0; i < h_numOfPrimesFoundOnGPU; i++)
+				printf("sync d_aPrimes[%d] = %u\n", i, h_aPrimesTempHelp[i]);
 		}
 		if (maxDivisor > h_aPrimes[h_numOfPrimesFoundOnGPU])
 			syncPrimes(h_aPrimes, d_aPrimes, h_pNumOfPrimesFound, &h_numOfPrimesFoundOnGPU);
@@ -134,7 +137,7 @@ bool find_N_primes(const unsigned int N, unsigned int *h_aPrimes, unsigned long 
 			
 			if(number == 121)
 			{	
-				printf("h_aPrimesTempHelp[%d] = %ld\n", i, h_aPrimesTempHelp[i]);
+				printf("h_aPrimesTempHelp[%d] = %u\n", i, h_aPrimesTempHelp[i]);
 				printf("h_pResults[%d] = %ld\n", i, h_pResults[i]);				
 			}
 			if(h_pResults[i] == 0)
@@ -178,7 +181,7 @@ int main(int argc, char* argv[])
 	}
 	printf("find %d primes\n", uiFirst_N_primes);
 	unsigned long int ulSize = uiFirst_N_primes * sizeof(unsigned int);
-	printf("size = %d\n", ulSize);
+	printf("size = %lu\n", ulSize);
 	unsigned int h_numOfPrimesFound = 0;
 	unsigned int* h_aPrimes = (unsigned int*)malloc(ulSize);
 	if (h_aPrimes == NULL)
