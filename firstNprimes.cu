@@ -108,6 +108,9 @@ bool find_N_primes(const unsigned int N, unsigned int *h_aPrimes, unsigned long 
 
 	int i, maxDivisorIndex;
 
+	//copy the first prime #2 now
+	syncPrimes(h_aPrimes, d_aPrimes, h_pNumOfPrimesFound, &h_numOfPrimesFoundOnGPU);
+
 	for (number = 3; *h_pNumOfPrimesFound < N; number++)
 	{
 		maxDivisor = (int)sqrt((double) number);
@@ -126,7 +129,7 @@ bool find_N_primes(const unsigned int N, unsigned int *h_aPrimes, unsigned long 
 			for (i = 0; i < h_numOfPrimesFoundOnGPU; i++)
 				printf("sync d_aPrimes[%d] = %u\n", i, h_aPrimesTempHelp[i]);
 		}
-		if (maxDivisor > h_aPrimes[h_numOfPrimesFoundOnGPU])
+		if (maxDivisor > h_aPrimes[h_numOfPrimesFoundOnGPU - 1])
 			syncPrimes(h_aPrimes, d_aPrimes, h_pNumOfPrimesFound, &h_numOfPrimesFoundOnGPU);
 		
 		isPrime<<<1, 1024>>>(number, d_aPrimes, maxDivisor, d_results);
